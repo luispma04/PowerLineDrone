@@ -1,5 +1,5 @@
 <resources>
-    <string name="sample_app_name">DJI SDK Sample</string>
+    <string name="zpi_app_name">ZPI App</string>
     <string name="action_settings">Settings</string>
 
     <string name="sdk_version">DJI SDK Version: %1$s</string>
