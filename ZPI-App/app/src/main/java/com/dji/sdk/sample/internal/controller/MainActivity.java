@@ -205,7 +205,7 @@ public class MainActivity extends AppCompatActivity {
             if (product != null && product.getModel() != null) {
                 titleTextView.setText("" + product.getModel().getDisplayName());
             } else {
-                titleTextView.setText(R.string.sample_app_name);
+                titleTextView.setText(R.string.zpi_app_name);
             }
         }
     }
