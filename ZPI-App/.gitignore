@@ -67,6 +67,9 @@ proguard/
 ehthumbs.db
 Thumbs.db
 
+# OpenCV
+/opencv/.cxx/cmake/
+
 # Import summary file
 import-summary.txt
 
