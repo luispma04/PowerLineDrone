@@ -42,7 +42,7 @@ CMAKE SERVER: {
     "-DCMAKE_TOOLCHAIN_FILE\u003dC:\\Users\\zuzek\\AppData\\Local\\Android\\Sdk\\ndk\\21.4.7075529\\build\\cmake\\android.toolchain.cmake",
     "-DANDROID_ABI\u003dx86",
     "-DANDROID_NDK\u003dC:\\Users\\zuzek\\AppData\\Local\\Android\\Sdk\\ndk\\21.4.7075529",
-    "-DANDROID_PLATFORM\u003dandroid-21",
+    "-DANDROID_PLATFORM\u003dandroid-23",
     "-DCMAKE_ANDROID_ARCH_ABI\u003dx86",
     "-DCMAKE_ANDROID_NDK\u003dC:\\Users\\zuzek\\AppData\\Local\\Android\\Sdk\\ndk\\21.4.7075529",
     "-DCMAKE_EXPORT_COMPILE_COMMANDS\u003dON",
@@ -50,7 +50,7 @@ CMAKE SERVER: {
     "-DCMAKE_RUNTIME_OUTPUT_DIRECTORY\u003dD:\\ZPI_v2\\ZPI-App\\opencv\\build\\intermediates\\cmake\\debug\\obj\\x86",
     "-DCMAKE_MAKE_PROGRAM\u003dC:\\Users\\zuzek\\AppData\\Local\\Android\\Sdk\\cmake\\3.10.2.4988404\\bin\\ninja.exe",
     "-DCMAKE_SYSTEM_NAME\u003dAndroid",
-    "-DCMAKE_SYSTEM_VERSION\u003d21",
+    "-DCMAKE_SYSTEM_VERSION\u003d23",
     "-DANDROID_STL\u003dc++_shared"
   ]
 }

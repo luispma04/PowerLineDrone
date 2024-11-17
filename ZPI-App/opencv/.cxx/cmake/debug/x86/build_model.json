@@ -8,7 +8,7 @@
   },
   "originalCxxBuildFolder": "D:\\ZPI_v2\\ZPI-App\\opencv\\.cxx\\cmake\\debug\\x86",
   "cxxBuildFolder": "D:\\ZPI_v2\\ZPI-App\\opencv\\.cxx\\cmake\\debug\\x86",
-  "abiPlatformVersion": 21,
+  "abiPlatformVersion": 23,
   "cmake": {
     "cmakeWrappingBaseFolder": "D:\\ZPI_v2\\ZPI-App\\opencv\\.cxx\\cxx\\debug\\x86",
     "cmakeArtifactsBaseFolder": "D:\\ZPI_v2\\ZPI-App\\opencv\\.cxx\\cmake\\debug\\x86",
@@ -45,7 +45,7 @@
         },
         {
           "name": "ANDROID_PLATFORM",
-          "value": "android-21"
+          "value": "android-23"
         },
         {
           "name": "CMAKE_ANDROID_ARCH_ABI",
@@ -77,7 +77,7 @@
         },
         {
           "name": "CMAKE_SYSTEM_VERSION",
-          "value": "21"
+          "value": "23"
         },
         {
           "name": "ANDROID_STL",
@@ -98,10 +98,7 @@
     "soFolder": "D:\\ZPI_v2\\ZPI-App\\opencv\\build\\intermediates\\cmake\\debug\\lib",
     "isDebuggableEnabled": true,
     "validAbiList": [
-      "ARMEABI_V7A",
-      "ARM64_V8A",
-      "X86",
-      "X86_64"
+      "X86"
     ],
     "buildTargetSet": [
       "opencv_jni_shared"
@@ -207,6 +204,7 @@
         "sdkFolder": "C:\\Users\\zuzek\\AppData\\Local\\Android\\Sdk",
         "isNativeCompilerSettingsCacheEnabled": false,
         "isBuildOnlyTargetAbiEnabled": true,
+        "ideBuildTargetAbi": "x86",
         "isCmakeBuildCohabitationEnabled": false,
         "isPrefabEnabled": false,
         "isV2NativeModelEnabled": true

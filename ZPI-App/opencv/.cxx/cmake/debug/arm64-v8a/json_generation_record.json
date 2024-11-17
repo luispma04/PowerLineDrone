@@ -1,7 +1,7 @@
 [
   {
     "level": "INFO",
-    "message": "Start JSON generation. Platform version: 21 min SDK version: arm64-v8a",
+    "message": "Start JSON generation. Platform version: 23 min SDK version: arm64-v8a",
     "file": "D:\\ZPI_v2\\ZPI-App\\opencv\\libcxx_helper\\CMakeLists.txt",
     "tag": "debug|arm64-v8a",
     "diagnosticCode": "UNKNOWN"
@@ -9,20 +9,6 @@
   {
     "level": "INFO",
     "message": "rebuilding JSON D:\\ZPI_v2\\ZPI-App\\opencv\\.cxx\\cmake\\debug\\arm64-v8a\\android_gradle_build.json due to:",
-    "file": "D:\\ZPI_v2\\ZPI-App\\opencv\\libcxx_helper\\CMakeLists.txt",
-    "tag": "debug|arm64-v8a",
-    "diagnosticCode": "UNKNOWN"
-  },
-  {
-    "level": "INFO",
-    "message": "- expected json D:\\ZPI_v2\\ZPI-App\\opencv\\.cxx\\cmake\\debug\\arm64-v8a\\android_gradle_build.json file is not present, will remove stale json folder",
-    "file": "D:\\ZPI_v2\\ZPI-App\\opencv\\libcxx_helper\\CMakeLists.txt",
-    "tag": "debug|arm64-v8a",
-    "diagnosticCode": "UNKNOWN"
-  },
-  {
-    "level": "INFO",
-    "message": "- missing previous command file D:\\ZPI_v2\\ZPI-App\\opencv\\.cxx\\cmake\\debug\\arm64-v8a\\build_command.txt, will remove stale json folder",
     "file": "D:\\ZPI_v2\\ZPI-App\\opencv\\libcxx_helper\\CMakeLists.txt",
     "tag": "debug|arm64-v8a",
     "diagnosticCode": "UNKNOWN"
@@ -50,7 +36,7 @@
   },
   {
     "level": "INFO",
-    "message": "executing cmake Executable : C:\\Users\\zuzek\\AppData\\Local\\Android\\Sdk\\cmake\\3.10.2.4988404\\bin\\cmake.exe\narguments : \n-HD:\\ZPI_v2\\ZPI-App\\opencv\\libcxx_helper\n-DCMAKE_FIND_ROOT_PATH\u003dD:\\ZPI_v2\\ZPI-App\\opencv\\.cxx\\cmake\\debug\\prefab\\arm64-v8a\\prefab\n-DCMAKE_BUILD_TYPE\u003dDebug\n-DCMAKE_TOOLCHAIN_FILE\u003dC:\\Users\\zuzek\\AppData\\Local\\Android\\Sdk\\ndk\\21.4.7075529\\build\\cmake\\android.toolchain.cmake\n-DANDROID_ABI\u003darm64-v8a\n-DANDROID_NDK\u003dC:\\Users\\zuzek\\AppData\\Local\\Android\\Sdk\\ndk\\21.4.7075529\n-DANDROID_PLATFORM\u003dandroid-21\n-DCMAKE_ANDROID_ARCH_ABI\u003darm64-v8a\n-DCMAKE_ANDROID_NDK\u003dC:\\Users\\zuzek\\AppData\\Local\\Android\\Sdk\\ndk\\21.4.7075529\n-DCMAKE_EXPORT_COMPILE_COMMANDS\u003dON\n-DCMAKE_LIBRARY_OUTPUT_DIRECTORY\u003dD:\\ZPI_v2\\ZPI-App\\opencv\\build\\intermediates\\cmake\\debug\\obj\\arm64-v8a\n-DCMAKE_RUNTIME_OUTPUT_DIRECTORY\u003dD:\\ZPI_v2\\ZPI-App\\opencv\\build\\intermediates\\cmake\\debug\\obj\\arm64-v8a\n-DCMAKE_MAKE_PROGRAM\u003dC:\\Users\\zuzek\\AppData\\Local\\Android\\Sdk\\cmake\\3.10.2.4988404\\bin\\ninja.exe\n-DCMAKE_SYSTEM_NAME\u003dAndroid\n-DCMAKE_SYSTEM_VERSION\u003d21\n-DANDROID_STL\u003dc++_shared\n-BD:\\ZPI_v2\\ZPI-App\\opencv\\.cxx\\cmake\\debug\\arm64-v8a\n-GNinja\njvmArgs : \n\n",
+    "message": "executing cmake Executable : C:\\Users\\zuzek\\AppData\\Local\\Android\\Sdk\\cmake\\3.10.2.4988404\\bin\\cmake.exe\narguments : \n-HD:\\ZPI_v2\\ZPI-App\\opencv\\libcxx_helper\n-DCMAKE_FIND_ROOT_PATH\u003dD:\\ZPI_v2\\ZPI-App\\opencv\\.cxx\\cmake\\debug\\prefab\\arm64-v8a\\prefab\n-DCMAKE_BUILD_TYPE\u003dDebug\n-DCMAKE_TOOLCHAIN_FILE\u003dC:\\Users\\zuzek\\AppData\\Local\\Android\\Sdk\\ndk\\21.4.7075529\\build\\cmake\\android.toolchain.cmake\n-DANDROID_ABI\u003darm64-v8a\n-DANDROID_NDK\u003dC:\\Users\\zuzek\\AppData\\Local\\Android\\Sdk\\ndk\\21.4.7075529\n-DANDROID_PLATFORM\u003dandroid-23\n-DCMAKE_ANDROID_ARCH_ABI\u003darm64-v8a\n-DCMAKE_ANDROID_NDK\u003dC:\\Users\\zuzek\\AppData\\Local\\Android\\Sdk\\ndk\\21.4.7075529\n-DCMAKE_EXPORT_COMPILE_COMMANDS\u003dON\n-DCMAKE_LIBRARY_OUTPUT_DIRECTORY\u003dD:\\ZPI_v2\\ZPI-App\\opencv\\build\\intermediates\\cmake\\debug\\obj\\arm64-v8a\n-DCMAKE_RUNTIME_OUTPUT_DIRECTORY\u003dD:\\ZPI_v2\\ZPI-App\\opencv\\build\\intermediates\\cmake\\debug\\obj\\arm64-v8a\n-DCMAKE_MAKE_PROGRAM\u003dC:\\Users\\zuzek\\AppData\\Local\\Android\\Sdk\\cmake\\3.10.2.4988404\\bin\\ninja.exe\n-DCMAKE_SYSTEM_NAME\u003dAndroid\n-DCMAKE_SYSTEM_VERSION\u003d23\n-DANDROID_STL\u003dc++_shared\n-BD:\\ZPI_v2\\ZPI-App\\opencv\\.cxx\\cmake\\debug\\arm64-v8a\n-GNinja\njvmArgs : \n\n",
     "file": "D:\\ZPI_v2\\ZPI-App\\opencv\\libcxx_helper\\CMakeLists.txt",
     "tag": "debug|arm64-v8a",
     "diagnosticCode": "UNKNOWN"
@@ -99,7 +85,7 @@
   },
   {
     "level": "INFO",
-    "message": "{\n  \"type\": \"configure\",\n  \"cacheArguments\": [\n    \"\",\n    \"-DCMAKE_FIND_ROOT_PATH\\u003dD:\\\\ZPI_v2\\\\ZPI-App\\\\opencv\\\\.cxx\\\\cmake\\\\debug\\\\prefab\\\\arm64-v8a\\\\prefab\",\n    \"-DCMAKE_BUILD_TYPE\\u003dDebug\",\n    \"-DCMAKE_TOOLCHAIN_FILE\\u003dC:\\\\Users\\\\zuzek\\\\AppData\\\\Local\\\\Android\\\\Sdk\\\\ndk\\\\21.4.7075529\\\\build\\\\cmake\\\\android.toolchain.cmake\",\n    \"-DANDROID_ABI\\u003darm64-v8a\",\n    \"-DANDROID_NDK\\u003dC:\\\\Users\\\\zuzek\\\\AppData\\\\Local\\\\Android\\\\Sdk\\\\ndk\\\\21.4.7075529\",\n    \"-DANDROID_PLATFORM\\u003dandroid-21\",\n    \"-DCMAKE_ANDROID_ARCH_ABI\\u003darm64-v8a\",\n    \"-DCMAKE_ANDROID_NDK\\u003dC:\\\\Users\\\\zuzek\\\\AppData\\\\Local\\\\Android\\\\Sdk\\\\ndk\\\\21.4.7075529\",\n    \"-DCMAKE_EXPORT_COMPILE_COMMANDS\\u003dON\",\n    \"-DCMAKE_LIBRARY_OUTPUT_DIRECTORY\\u003dD:\\\\ZPI_v2\\\\ZPI-App\\\\opencv\\\\build\\\\intermediates\\\\cmake\\\\debug\\\\obj\\\\arm64-v8a\",\n    \"-DCMAKE_RUNTIME_OUTPUT_DIRECTORY\\u003dD:\\\\ZPI_v2\\\\ZPI-App\\\\opencv\\\\build\\\\intermediates\\\\cmake\\\\debug\\\\obj\\\\arm64-v8a\",\n    \"-DCMAKE_MAKE_PROGRAM\\u003dC:\\\\Users\\\\zuzek\\\\AppData\\\\Local\\\\Android\\\\Sdk\\\\cmake\\\\3.10.2.4988404\\\\bin\\\\ninja.exe\",\n    \"-DCMAKE_SYSTEM_NAME\\u003dAndroid\",\n    \"-DCMAKE_SYSTEM_VERSION\\u003d21\",\n    \"-DANDROID_STL\\u003dc++_shared\"\n  ]\n}\n",
+    "message": "{\n  \"type\": \"configure\",\n  \"cacheArguments\": [\n    \"\",\n    \"-DCMAKE_FIND_ROOT_PATH\\u003dD:\\\\ZPI_v2\\\\ZPI-App\\\\opencv\\\\.cxx\\\\cmake\\\\debug\\\\prefab\\\\arm64-v8a\\\\prefab\",\n    \"-DCMAKE_BUILD_TYPE\\u003dDebug\",\n    \"-DCMAKE_TOOLCHAIN_FILE\\u003dC:\\\\Users\\\\zuzek\\\\AppData\\\\Local\\\\Android\\\\Sdk\\\\ndk\\\\21.4.7075529\\\\build\\\\cmake\\\\android.toolchain.cmake\",\n    \"-DANDROID_ABI\\u003darm64-v8a\",\n    \"-DANDROID_NDK\\u003dC:\\\\Users\\\\zuzek\\\\AppData\\\\Local\\\\Android\\\\Sdk\\\\ndk\\\\21.4.7075529\",\n    \"-DANDROID_PLATFORM\\u003dandroid-23\",\n    \"-DCMAKE_ANDROID_ARCH_ABI\\u003darm64-v8a\",\n    \"-DCMAKE_ANDROID_NDK\\u003dC:\\\\Users\\\\zuzek\\\\AppData\\\\Local\\\\Android\\\\Sdk\\\\ndk\\\\21.4.7075529\",\n    \"-DCMAKE_EXPORT_COMPILE_COMMANDS\\u003dON\",\n    \"-DCMAKE_LIBRARY_OUTPUT_DIRECTORY\\u003dD:\\\\ZPI_v2\\\\ZPI-App\\\\opencv\\\\build\\\\intermediates\\\\cmake\\\\debug\\\\obj\\\\arm64-v8a\",\n    \"-DCMAKE_RUNTIME_OUTPUT_DIRECTORY\\u003dD:\\\\ZPI_v2\\\\ZPI-App\\\\opencv\\\\build\\\\intermediates\\\\cmake\\\\debug\\\\obj\\\\arm64-v8a\",\n    \"-DCMAKE_MAKE_PROGRAM\\u003dC:\\\\Users\\\\zuzek\\\\AppData\\\\Local\\\\Android\\\\Sdk\\\\cmake\\\\3.10.2.4988404\\\\bin\\\\ninja.exe\",\n    \"-DCMAKE_SYSTEM_NAME\\u003dAndroid\",\n    \"-DCMAKE_SYSTEM_VERSION\\u003d23\",\n    \"-DANDROID_STL\\u003dc++_shared\"\n  ]\n}\n",
     "file": "D:\\ZPI_v2\\ZPI-App\\opencv\\libcxx_helper\\CMakeLists.txt",
     "tag": "debug|arm64-v8a",
     "diagnosticCode": "UNKNOWN"
@@ -443,6 +429,13 @@
   {
     "level": "INFO",
     "message": "done executing cmake",
+    "file": "D:\\ZPI_v2\\ZPI-App\\opencv\\libcxx_helper\\CMakeLists.txt",
+    "tag": "debug|arm64-v8a",
+    "diagnosticCode": "UNKNOWN"
+  },
+  {
+    "level": "INFO",
+    "message": "deleted unexpected build output D:\\ZPI_v2\\ZPI-App\\opencv\\build\\intermediates\\cmake\\debug\\obj\\arm64-v8a\\libc++_shared.so in incremental regenerate",
     "file": "D:\\ZPI_v2\\ZPI-App\\opencv\\libcxx_helper\\CMakeLists.txt",
     "tag": "debug|arm64-v8a",
     "diagnosticCode": "UNKNOWN"
