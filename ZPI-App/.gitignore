@@ -68,7 +68,9 @@ ehthumbs.db
 Thumbs.db
 
 # OpenCV
-/opencv/.cxx/cmake/debug
+/opencv/.cxx/cmake/debug/
+.ninja_deps
+.ninja_log
 
 # Import summary file
 import-summary.txt
