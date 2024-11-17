@@ -68,7 +68,7 @@ ehthumbs.db
 Thumbs.db
 
 # OpenCV
-/opencv/.cxx/cmake/
+/opencv/.cxx/cmake/debug
 
 # Import summary file
 import-summary.txt
