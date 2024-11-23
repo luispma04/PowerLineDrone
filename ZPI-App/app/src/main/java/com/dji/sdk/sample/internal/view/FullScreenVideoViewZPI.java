@@ -34,6 +34,7 @@ public class FullScreenVideoViewZPI extends LinearLayout implements PresentableV
 
     public static final int INVALID_READING_LIMIT_TIME = 2000;
     public static final int DISTANCE_UPDATE_DELAY_TIME = 170;
+    public static final int SHOT_DELAY_TIME = 4000;
     private VideoFeedView videoFeedView;
     private VideoFeeder.VideoDataListener videoDataListener;
     private Button btnTurnOnLed;
@@ -178,7 +179,7 @@ public class FullScreenVideoViewZPI extends LinearLayout implements PresentableV
             new android.os.Handler().postDelayed(() -> {
                 LEDsSettings ledsSettingsOff = new LEDsSettings.Builder().frontLEDsOn(false).build();
                 flightController.setLEDsEnabledSettings(ledsSettingsOff, null);
-            }, 2500);
+            }, SHOT_DELAY_TIME);
         }
     }
 
