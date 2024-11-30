@@ -21,9 +21,11 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
 
+import dji.common.flightcontroller.Attitude;
 import dji.common.flightcontroller.LEDsSettings;
 import dji.common.flightcontroller.ObstacleDetectionSector;
 import dji.common.flightcontroller.VisionSensorPosition;
+import dji.common.flightcontroller.FlightControllerState;
 import dji.sdk.base.BaseProduct;
 import dji.sdk.camera.VideoFeeder;
 import dji.sdk.flightcontroller.FlightAssistant;
@@ -54,6 +56,9 @@ public class FullScreenVideoViewZPI extends LinearLayout implements PresentableV
     private Button btn_aim;
     private TextView textOverlayView;
     private View greenTintOverlay;
+    private TextView tvAltitude;
+    private TextView tvSpeed;
+    private ArtificialHorizonViewZPI artificialHorizonView;
 
     public FullScreenVideoViewZPI(Context context) {
         super(context);
@@ -81,8 +86,11 @@ public class FullScreenVideoViewZPI extends LinearLayout implements PresentableV
         circlesHandler.removeCallbacks(updateRunnable);
         distanceHandler.removeCallbacks(distanceChecker);
         distanceHandler.removeCallbacks(distanceTextUpdater);
-    }
 
+        if (flightController != null) {
+            flightController.setStateCallback(null);
+        }
+    }
 
     private void init(Context context) {
         LayoutInflater.from(context).inflate(R.layout.view_full_screen_video_zpi, this, true);
@@ -93,10 +101,18 @@ public class FullScreenVideoViewZPI extends LinearLayout implements PresentableV
         textOverlayView = findViewById(R.id.text_overlay_view);
         greenTintOverlay = findViewById(R.id.green_tint_overlay);
 
+        tvAltitude = findViewById(R.id.tv_altitude);
+        tvSpeed = findViewById(R.id.tv_speed);
+
+        artificialHorizonView = findViewById(R.id.artificial_horizon_view);
+        artificialHorizonView.setVisibility(View.GONE);
 
         if (VideoFeeder.getInstance() != null) {
             setupVideoFeedAndCamera();
         }
+
+        initFlightController();
+        setupFlightControllerStateCallback();
 
         setupButtons();
         setupObstacleDistanceDetection();
@@ -117,7 +133,9 @@ public class FullScreenVideoViewZPI extends LinearLayout implements PresentableV
     }
 
     private void disableFullscreenMode() {
-        mainContent.enableButton();
+        if (mainContent != null) {
+            mainContent.enableButton();
+        }
         View decorView = ((MainActivity) getContext()).getWindow().getDecorView();
         decorView.setSystemUiVisibility(
                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE
@@ -179,7 +197,6 @@ public class FullScreenVideoViewZPI extends LinearLayout implements PresentableV
         overlayView.invalidate();
     }
 
-
     private float calculateScaleFactor() {
         // Calculate a scale factor based on the view size
         // For simplicity, let's assume the maximum errorDistance corresponds to half the smaller dimension
@@ -188,14 +205,12 @@ public class FullScreenVideoViewZPI extends LinearLayout implements PresentableV
         return (minViewDimension / 2f) / maxErrorDistance;
     }
 
-
     private Random random = new Random();
     private float currentErrorDistance = 1f;
     private float targetErrorDistance = 1f;
     private long lastUpdateTime = 0;
     private static final long UPDATE_INTERVAL = 50; // Update every 500 milliseconds
     private float interpolationSpeed = 0.05f; // Adjust for smoother transitions
-
 
     private float getErrorDistance() {
         long currentTime = System.currentTimeMillis();
@@ -226,7 +241,7 @@ public class FullScreenVideoViewZPI extends LinearLayout implements PresentableV
             LEDsSettings ledsSettingsOn = new LEDsSettings.Builder().frontLEDsOn(true).build();
             flightController.setLEDsEnabledSettings(ledsSettingsOn, null);
 
-            new android.os.Handler().postDelayed(() -> {
+            new Handler().postDelayed(() -> {
                 LEDsSettings ledsSettingsOff = new LEDsSettings.Builder().frontLEDsOn(false).build();
                 flightController.setLEDsEnabledSettings(ledsSettingsOff, null);
             }, SHOT_DELAY_TIME);
@@ -249,6 +264,7 @@ public class FullScreenVideoViewZPI extends LinearLayout implements PresentableV
         isAimModeOn = !isAimModeOn;
         overlayView.showCrosshair(isAimModeOn);
         greenTintOverlay.setVisibility(isAimModeOn ? View.VISIBLE : View.GONE);
+        artificialHorizonView.setVisibility(isAimModeOn ? View.VISIBLE : View.GONE);
         displayAimModeToastMsg();
     }
 
@@ -291,8 +307,6 @@ public class FullScreenVideoViewZPI extends LinearLayout implements PresentableV
                     float minReading = INVALID_DISTANCE;
                     for (ObstacleDetectionSector sector : visionDetectionSectorArray) {
                         float distance = sector.getObstacleDistanceInMeters();
-                    /*for (int i = 1; i <= 2; i++) {
-                        float distance = visionDetectionSectorArray[i].getObstacleDistanceInMeters();*/
                         if (distance >= 0 && distance != 100 && distance < minReading) { // ignore invalid readings of 100 meters
                             minReading = distance;
                             lastValidReadingTime = System.currentTimeMillis(); // update the last valid reading time
@@ -342,4 +356,53 @@ public class FullScreenVideoViewZPI extends LinearLayout implements PresentableV
             distanceHandler.postDelayed(this, 500);
         }
     };
+
+    private void initFlightController() {
+        if (DJISDKManager.getInstance() != null) {
+            BaseProduct product = DJISDKManager.getInstance().getProduct();
+            if (product instanceof Aircraft) {
+                flightController = ((Aircraft) product).getFlightController();
+            }
+        }
+    }
+
+    private void setupFlightControllerStateCallback() {
+        if (flightController != null) {
+            flightController.setStateCallback(new FlightControllerState.Callback() {
+                @Override
+                public void onUpdate(@NonNull FlightControllerState state) {
+                    updateDroneState(state);
+                }
+            });
+        }
+    }
+    private void updateDroneState(FlightControllerState state) {
+        // Update Altitude
+        final double altitude = state.getAircraftLocation().getAltitude();
+
+        // Update Velocity
+        final float velocityX = state.getVelocityX();
+        final float velocityY = state.getVelocityY();
+        final float velocityZ = state.getVelocityZ();
+        final double speed = Math.sqrt(
+                velocityX * velocityX +
+                        velocityY * velocityY +
+                        velocityZ * velocityZ
+        );
+
+        // Update Gyroscope Data (Attitude)
+        final Attitude attitude = state.getAttitude();
+        final double pitch = attitude.pitch;
+        final double roll = attitude.roll;
+
+        // Update UI on the main thread
+        post(() -> {
+            tvAltitude.setText(String.format("Altitude: %.1f m", altitude));
+            tvSpeed.setText(String.format("Speed: %.1f m/s", speed));
+
+            if (artificialHorizonView != null) {
+                artificialHorizonView.updateAttitude((float) pitch, (float) roll);
+            }
+        });
+    }
 }
