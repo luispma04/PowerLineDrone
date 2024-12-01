@@ -39,7 +39,7 @@ public class FullScreenVideoViewZPI extends LinearLayout implements PresentableV
     public static final int DISTANCE_UPDATE_DELAY_TIME = 170;
     public static final int SHOT_DELAY_TIME = 4000;
     private static final int INVALID_DISTANCE = 100;
-    public static final int THRESHOLD_DISTANCE = 5;
+    public static final int THRESHOLD_DISTANCE = 4;
     MainContent mainContent;
     private VideoFeedView videoFeedView;
     private VideoFeeder.VideoDataListener videoDataListener;

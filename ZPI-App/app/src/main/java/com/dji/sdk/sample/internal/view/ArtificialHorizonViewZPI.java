@@ -24,10 +24,10 @@ public class ArtificialHorizonViewZPI extends View {
 
     private void init() {
         horizonPaint = new Paint();
-        horizonPaint.setColor(getResources().getColor(android.R.color.white));
-        horizonPaint.setStrokeWidth(5f);
+        horizonPaint.setColor(getResources().getColor(android.R.color.holo_green_dark));
+        horizonPaint.setStrokeWidth(10f);
         horizonPaint.setStyle(Paint.Style.STROKE);
-        horizonPaint.setAlpha(128); // Set opacity to 50% (128 out of 255)
+        horizonPaint.setAlpha(191); // Set opacity to 50% (128 out of 255)
         horizonPaint.setAntiAlias(true);
     }
 
