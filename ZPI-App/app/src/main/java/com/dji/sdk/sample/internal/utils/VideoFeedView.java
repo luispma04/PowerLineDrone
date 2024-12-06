@@ -176,4 +176,11 @@ public class VideoFeedView extends SurfaceView {
     public interface FrameProcessor {
         void processFrame(Bitmap bitmap);
     }
+
+    public Bitmap getBitmap() {
+        setDrawingCacheEnabled(true);
+        Bitmap bitmap = Bitmap.createBitmap(getDrawingCache());
+        setDrawingCacheEnabled(false);
+        return bitmap;
+    }
 }

@@ -119,4 +119,11 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <com.dji.sdk.sample.internal.view.ObjectDetectionOverlayView
+        android:id="@+id/object_detection_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/transparent" />
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>

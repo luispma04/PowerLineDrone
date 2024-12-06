@@ -1,6 +1,8 @@
 package com.dji.sdk.sample.internal.view;
 
 import android.content.Context;
+import android.content.res.AssetFileDescriptor;
+import android.graphics.Bitmap;
 import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +19,10 @@ import com.dji.sdk.sample.internal.utils.ModuleVerificationUtil;
 import com.dji.sdk.sample.internal.utils.ToastUtils;
 import com.dji.sdk.sample.internal.utils.VideoFeedView;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
@@ -32,6 +38,16 @@ import dji.sdk.flightcontroller.FlightAssistant;
 import dji.sdk.flightcontroller.FlightController;
 import dji.sdk.products.Aircraft;
 import dji.sdk.sdkmanager.DJISDKManager;
+
+import org.tensorflow.lite.Interpreter;
+import org.opencv.core.Mat;
+import org.opencv.core.Size;
+import org.opencv.imgproc.Imgproc;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FullScreenVideoViewZPI extends LinearLayout implements PresentableView {
 
@@ -59,6 +75,11 @@ public class FullScreenVideoViewZPI extends LinearLayout implements PresentableV
     private TextView tvAltitude;
     private TextView tvSpeed;
     private ArtificialHorizonViewZPI artificialHorizonView;
+    private boolean isObjectDetectionEnabled = false;
+    private Handler objectDetectionHandler;
+    private Runnable objectDetectionRunnable;
+    private Interpreter tfliteInterpreter;
+    private ObjectDetectionOverlayView detectionOverlayView;
 
     public FullScreenVideoViewZPI(Context context) {
         super(context);
@@ -93,6 +114,12 @@ public class FullScreenVideoViewZPI extends LinearLayout implements PresentableV
     }
 
     private void init(Context context) {
+        try {
+            tfliteInterpreter = new Interpreter(loadModelFile(context, "model.tflite"));
+        } catch (IOException e) {
+            e.printStackTrace();
+            ToastUtils.setResultToToast("Failed to load TensorFlow Lite model!");
+        }
         LayoutInflater.from(context).inflate(R.layout.view_full_screen_video_zpi, this, true);
         videoFeedView = findViewById(R.id.video_feed_view);
         btn_fire = findViewById(R.id.btn_fire);
@@ -100,6 +127,8 @@ public class FullScreenVideoViewZPI extends LinearLayout implements PresentableV
         overlayView = findViewById(R.id.overlay_view);
         textOverlayView = findViewById(R.id.text_overlay_view);
         greenTintOverlay = findViewById(R.id.green_tint_overlay);
+
+        detectionOverlayView = findViewById(R.id.object_detection_overlay);
 
         tvAltitude = findViewById(R.id.tv_altitude);
         tvSpeed = findViewById(R.id.tv_speed);
@@ -266,6 +295,13 @@ public class FullScreenVideoViewZPI extends LinearLayout implements PresentableV
         greenTintOverlay.setVisibility(isAimModeOn ? View.VISIBLE : View.GONE);
         artificialHorizonView.setVisibility(isAimModeOn ? View.VISIBLE : View.GONE);
         displayAimModeToastMsg();
+
+        // object detection
+        if (isAimModeOn) {
+            startObjectDetection();
+        } else {
+            stopObjectDetection();
+        }
     }
 
     private void displayAimModeToastMsg() {
@@ -405,4 +441,82 @@ public class FullScreenVideoViewZPI extends LinearLayout implements PresentableV
             }
         });
     }
+
+    private void startObjectDetection() {
+        isObjectDetectionEnabled = true;
+        objectDetectionHandler = new Handler();
+        objectDetectionRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (isObjectDetectionEnabled) {
+                    performObjectDetection();
+                    objectDetectionHandler.postDelayed(this, 200);
+                }
+            }
+        };
+        objectDetectionHandler.post(objectDetectionRunnable);
+    }
+
+    private void stopObjectDetection() {
+        isObjectDetectionEnabled = false;
+        if (objectDetectionHandler != null) {
+            objectDetectionHandler.removeCallbacks(objectDetectionRunnable);
+        }
+    }
+
+    private void performObjectDetection() {
+        if (videoFeedView.getBitmap() != null) {
+            Bitmap frameBitmap = videoFeedView.getBitmap();
+            float[] inputTensor = preprocessFrame(frameBitmap);
+            float[][] outputScores = new float[1][1]; // Single score for the detected object
+            float[][] outputBoxes = new float[1][4]; // Single bounding box
+
+            tfliteInterpreter.run(inputTensor, new Object[]{outputBoxes, outputScores});
+
+            if (outputScores[0][0] > 0.5) { // Confidence threshold
+                float left = outputBoxes[0][0] * frameBitmap.getWidth();
+                float top = outputBoxes[0][1] * frameBitmap.getHeight();
+                float right = outputBoxes[0][2] * frameBitmap.getWidth();
+                float bottom = outputBoxes[0][3] * frameBitmap.getHeight();
+                updateDetectionOverlay(left, top, right, bottom, "Trunk");
+            } else {
+                clearDetectionOverlay();
+            }
+        }
+    }
+
+    private float[] preprocessFrame(Bitmap frameBitmap) {
+        int modelInputSize = 640;
+        Bitmap resizedBitmap = Bitmap.createScaledBitmap(frameBitmap, modelInputSize, modelInputSize, false);
+
+        float[] inputTensor = new float[modelInputSize * modelInputSize * 3];
+        int[] pixelValues = new int[modelInputSize * modelInputSize];
+        resizedBitmap.getPixels(pixelValues, 0, modelInputSize, 0, 0, modelInputSize, modelInputSize);
+
+        for (int i = 0; i < pixelValues.length; i++) {
+            int pixel = pixelValues[i];
+            inputTensor[i * 3] = ((pixel >> 16) & 0xFF) / 255.0f; // R
+            inputTensor[i * 3 + 1] = ((pixel >> 8) & 0xFF) / 255.0f; // G
+            inputTensor[i * 3 + 2] = (pixel & 0xFF) / 255.0f; // B
+        }
+        return inputTensor;
+    }
+
+    private void updateDetectionOverlay(float left, float top, float right, float bottom, String label) {
+        detectionOverlayView.setBoundingBox(left, top, right, bottom, label); // Use detectionOverlayView to update bounding box and label
+    }
+
+    private void clearDetectionOverlay() {
+        detectionOverlayView.clearBoundingBox(); // Use detectionOverlayView to clear bounding box and label
+    }
+
+    private MappedByteBuffer loadModelFile(Context context, String modelPath) throws IOException {
+        AssetFileDescriptor fileDescriptor = context.getAssets().openFd(modelPath);
+        FileInputStream inputStream = new FileInputStream(fileDescriptor.getFileDescriptor());
+        FileChannel fileChannel = inputStream.getChannel();
+        long startOffset = fileDescriptor.getStartOffset();
+        long declaredLength = fileDescriptor.getDeclaredLength();
+        return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength);
+    }
+
 }
