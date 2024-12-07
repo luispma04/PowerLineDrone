@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -70,6 +71,7 @@ public class FullScreenVideoViewZPI extends LinearLayout implements PresentableV
     private long lastValidReadingTime = 0;
     private Button btn_fire;
     private Button btn_aim;
+    private Button btn_detect;
     private TextView textOverlayView;
     private View greenTintOverlay;
     private TextView tvAltitude;
@@ -115,15 +117,21 @@ public class FullScreenVideoViewZPI extends LinearLayout implements PresentableV
 
     private void init(Context context) {
         try {
-            tfliteInterpreter = new Interpreter(loadModelFile(context, "model.tflite"));
+            // Log the model loading attempt
+            Log.d("ObjectDetection", "Attempting to load TensorFlow Lite model...");
+            tfliteInterpreter = new Interpreter(loadModelFile(context, "best_float32.tflite"));
+            Log.d("ObjectDetection", "TensorFlow Lite model loaded successfully.");
         } catch (IOException e) {
             e.printStackTrace();
+            Log.e("ObjectDetection", "Failed to load TensorFlow Lite model!", e);
             ToastUtils.setResultToToast("Failed to load TensorFlow Lite model!");
         }
+
         LayoutInflater.from(context).inflate(R.layout.view_full_screen_video_zpi, this, true);
         videoFeedView = findViewById(R.id.video_feed_view);
         btn_fire = findViewById(R.id.btn_fire);
         btn_aim = findViewById(R.id.btn_aim);
+        btn_detect = findViewById(R.id.btn_detect);
         overlayView = findViewById(R.id.overlay_view);
         textOverlayView = findViewById(R.id.text_overlay_view);
         greenTintOverlay = findViewById(R.id.green_tint_overlay);
@@ -147,6 +155,8 @@ public class FullScreenVideoViewZPI extends LinearLayout implements PresentableV
         setupObstacleDistanceDetection();
         setupCircleHandler();
         startDistanceHandler();
+
+        Log.d("ObjectDetection", "Initialization complete.");
     }
 
     private void enableFullscreenMode() {
@@ -286,6 +296,10 @@ public class FullScreenVideoViewZPI extends LinearLayout implements PresentableV
             aim();
         });
 
+        btn_detect.setOnClickListener(v -> {
+            toggleObjectDetection();
+        });
+
         btn_fire.setEnabled(false);
     }
 
@@ -295,12 +309,19 @@ public class FullScreenVideoViewZPI extends LinearLayout implements PresentableV
         greenTintOverlay.setVisibility(isAimModeOn ? View.VISIBLE : View.GONE);
         artificialHorizonView.setVisibility(isAimModeOn ? View.VISIBLE : View.GONE);
         displayAimModeToastMsg();
+    }
 
-        // object detection
-        if (isAimModeOn) {
-            startObjectDetection();
-        } else {
+    private void toggleObjectDetection() {
+        if (isObjectDetectionEnabled) {
+            Log.d("ObjectDetection", "Stopping object detection...");
             stopObjectDetection();
+            btn_detect.setText("Start Detect");
+            ToastUtils.setResultToToast("Object Detection Stopped");
+        } else {
+            Log.d("ObjectDetection", "Starting object detection...");
+            startObjectDetection();
+            btn_detect.setText("Stop Detect");
+            ToastUtils.setResultToToast("Object Detection Started");
         }
     }
 
@@ -465,25 +486,43 @@ public class FullScreenVideoViewZPI extends LinearLayout implements PresentableV
     }
 
     private void performObjectDetection() {
+        Log.d("ObjectDetection", "Starting object detection process...");
         if (videoFeedView.getBitmap() != null) {
             Bitmap frameBitmap = videoFeedView.getBitmap();
+
+            Log.d("ObjectDetection", "Frame captured for processing: " +
+                    frameBitmap.getWidth() + "x" + frameBitmap.getHeight());
+
             float[] inputTensor = preprocessFrame(frameBitmap);
-            float[][] outputScores = new float[1][1]; // Single score for the detected object
-            float[][] outputBoxes = new float[1][4]; // Single bounding box
+            Log.d("ObjectDetection", "Input tensor prepared.");
+
+            float[][] outputScores = new float[1][1];
+            float[][] outputBoxes = new float[1][4];
 
             tfliteInterpreter.run(inputTensor, new Object[]{outputBoxes, outputScores});
+            Log.d("ObjectDetection", "Inference completed. Score: " + outputScores[0][0]);
 
-            if (outputScores[0][0] > 0.5) { // Confidence threshold
+            if (outputScores[0][0] > 0.1) { // Confidence threshold
+                Log.d("ObjectDetection", "Object detected with confidence: " + outputScores[0][0]);
+
                 float left = outputBoxes[0][0] * frameBitmap.getWidth();
                 float top = outputBoxes[0][1] * frameBitmap.getHeight();
                 float right = outputBoxes[0][2] * frameBitmap.getWidth();
                 float bottom = outputBoxes[0][3] * frameBitmap.getHeight();
-                updateDetectionOverlay(left, top, right, bottom, "Trunk");
+
+                Log.d("ObjectDetection", "Bounding box - Left: " + left + ", Top: " + top +
+                        ", Right: " + right + ", Bottom: " + bottom);
+
+                updateDetectionOverlay(left, top, right, bottom, "tree");
             } else {
+                Log.d("ObjectDetection", "No object detected or confidence below threshold.");
                 clearDetectionOverlay();
             }
+        } else {
+            Log.w("ObjectDetection", "No frame available for processing.");
         }
     }
+
 
     private float[] preprocessFrame(Bitmap frameBitmap) {
         int modelInputSize = 640;
@@ -503,11 +542,11 @@ public class FullScreenVideoViewZPI extends LinearLayout implements PresentableV
     }
 
     private void updateDetectionOverlay(float left, float top, float right, float bottom, String label) {
-        detectionOverlayView.setBoundingBox(left, top, right, bottom, label); // Use detectionOverlayView to update bounding box and label
+        detectionOverlayView.setBoundingBox(left, top, right, bottom, label);
     }
 
     private void clearDetectionOverlay() {
-        detectionOverlayView.clearBoundingBox(); // Use detectionOverlayView to clear bounding box and label
+        detectionOverlayView.clearBoundingBox();
     }
 
     private MappedByteBuffer loadModelFile(Context context, String modelPath) throws IOException {
