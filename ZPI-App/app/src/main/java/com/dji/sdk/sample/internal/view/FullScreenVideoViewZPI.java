@@ -3,6 +3,7 @@ package com.dji.sdk.sample.internal.view;
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -24,6 +25,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
@@ -41,6 +43,7 @@ import dji.sdk.products.Aircraft;
 import dji.sdk.sdkmanager.DJISDKManager;
 
 import org.tensorflow.lite.Interpreter;
+import org.tensorflow.lite.TensorFlowLite;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
@@ -121,6 +124,10 @@ public class FullScreenVideoViewZPI extends LinearLayout implements PresentableV
             Log.d("ObjectDetection", "Attempting to load TensorFlow Lite model...");
             tfliteInterpreter = new Interpreter(loadModelFile(context, "best_float32.tflite"));
             Log.d("ObjectDetection", "TensorFlow Lite model loaded successfully.");
+            // Log model input and output shapes
+            Log.d("ObjectDetection", "Input shape: " + Arrays.toString(tfliteInterpreter.getInputTensor(0).shape()));
+            Log.d("ObjectDetection", "Output shape: " + Arrays.toString(tfliteInterpreter.getOutputTensor(0).shape()));
+
         } catch (IOException e) {
             e.printStackTrace();
             Log.e("ObjectDetection", "Failed to load TensorFlow Lite model!", e);
@@ -487,56 +494,95 @@ public class FullScreenVideoViewZPI extends LinearLayout implements PresentableV
 
     private void performObjectDetection() {
         Log.d("ObjectDetection", "Starting object detection process...");
+        String tfliteVersion = TensorFlowLite.runtimeVersion();
+        Log.d("TensorFlowLite", "TensorFlow Lite Runtime Version: " + tfliteVersion);
+
         if (videoFeedView.getBitmap() != null) {
             Bitmap frameBitmap = videoFeedView.getBitmap();
 
             Log.d("ObjectDetection", "Frame captured for processing: " +
                     frameBitmap.getWidth() + "x" + frameBitmap.getHeight());
 
-            float[] inputTensor = preprocessFrame(frameBitmap);
-            Log.d("ObjectDetection", "Input tensor prepared.");
+            try {
+                // Preprocess the frame
+                float[] inputTensor = preprocessFrame(frameBitmap);
+                Log.d("ObjectDetection", "Input tensor prepared. Shape: [1, 640, 640, 3]");
+                Log.d("ObjectDetection", "Input tensor size: " + inputTensor.length);
+                Log.d("ObjectDetection", "First 10 tensor values: " +
+                        inputTensor[0] + ", " + inputTensor[1] + ", " + inputTensor[2] + "...");
 
-            float[][] outputScores = new float[1][1];
-            float[][] outputBoxes = new float[1][4];
+                // Initialize output tensor matching the model's output shape
+                float[][][] outputTensor = new float[1][5][8400];
 
-            tfliteInterpreter.run(inputTensor, new Object[]{outputBoxes, outputScores});
-            Log.d("ObjectDetection", "Inference completed. Score: " + outputScores[0][0]);
+                // Allocate tensors and run inference
+                try {
+                    tfliteInterpreter.allocateTensors(); // Ensure tensors are allocated
+                    Log.d("ObjectDetection", "Tensors allocated successfully.");
+                    tfliteInterpreter.run(inputTensor, outputTensor);
+                    Log.d("ObjectDetection", "Inference completed.");
+                } catch (Exception e) {
+                    Log.e("ObjectDetection", "Error during inference: ", e);
+                    return;
+                }
 
-            if (outputScores[0][0] > 0.1) { // Confidence threshold
-                Log.d("ObjectDetection", "Object detected with confidence: " + outputScores[0][0]);
+                // Process the model output
+                processOutput(outputTensor);
 
-                float left = outputBoxes[0][0] * frameBitmap.getWidth();
-                float top = outputBoxes[0][1] * frameBitmap.getHeight();
-                float right = outputBoxes[0][2] * frameBitmap.getWidth();
-                float bottom = outputBoxes[0][3] * frameBitmap.getHeight();
-
-                Log.d("ObjectDetection", "Bounding box - Left: " + left + ", Top: " + top +
-                        ", Right: " + right + ", Bottom: " + bottom);
-
-                updateDetectionOverlay(left, top, right, bottom, "tree");
-            } else {
-                Log.d("ObjectDetection", "No object detected or confidence below threshold.");
-                clearDetectionOverlay();
+            } catch (Exception e) {
+                Log.e("ObjectDetection", "Error during preprocessing or detection: ", e);
             }
         } else {
             Log.w("ObjectDetection", "No frame available for processing.");
         }
     }
 
+    private void processOutput(float[][][] outputTensor) {
+        Log.d("ObjectDetection", "Processing output tensor...");
+
+        // Iterate through detections
+        for (int i = 0; i < outputTensor[0][4].length; i++) {
+            float confidence = outputTensor[0][4][i];
+
+            if (confidence > 0.2) { // Adjust confidence threshold as needed
+                float xCenter = outputTensor[0][0][i];
+                float yCenter = outputTensor[0][1][i];
+                float width = outputTensor[0][2][i];
+                float height = outputTensor[0][3][i];
+
+                Log.d("ObjectDetection", "Detection " + i + ": Confidence=" + confidence);
+
+                // Convert YOLO format (x_center, y_center, width, height) to bounding box
+                float left = xCenter - width / 2;
+                float top = yCenter - height / 2;
+                float right = xCenter + width / 2;
+                float bottom = yCenter + height / 2;
+
+                Log.d("ObjectDetection", "Bounding box - Left: " + left + ", Top: " + top +
+                        ", Right: " + right + ", Bottom: " + bottom);
+
+                updateDetectionOverlay(left, top, right, bottom, "Detected Object");
+            }
+        }
+    }
 
     private float[] preprocessFrame(Bitmap frameBitmap) {
         int modelInputSize = 640;
-        Bitmap resizedBitmap = Bitmap.createScaledBitmap(frameBitmap, modelInputSize, modelInputSize, false);
 
+        // Resize the frame to 640x640
+        Bitmap resizedBitmap = Bitmap.createScaledBitmap(frameBitmap, modelInputSize, modelInputSize, true);
+
+        // Create a tensor for the input
         float[] inputTensor = new float[modelInputSize * modelInputSize * 3];
         int[] pixelValues = new int[modelInputSize * modelInputSize];
         resizedBitmap.getPixels(pixelValues, 0, modelInputSize, 0, 0, modelInputSize, modelInputSize);
 
         for (int i = 0; i < pixelValues.length; i++) {
             int pixel = pixelValues[i];
-            inputTensor[i * 3] = ((pixel >> 16) & 0xFF) / 255.0f; // R
-            inputTensor[i * 3 + 1] = ((pixel >> 8) & 0xFF) / 255.0f; // G
-            inputTensor[i * 3 + 2] = (pixel & 0xFF) / 255.0f; // B
+
+            // Normalize RGB values to [0, 1]
+            inputTensor[i * 3] = ((pixel >> 16) & 0xFF) / 255.0f; // Red
+            inputTensor[i * 3 + 1] = ((pixel >> 8) & 0xFF) / 255.0f; // Green
+            inputTensor[i * 3 + 2] = (pixel & 0xFF) / 255.0f; // Blue
         }
         return inputTensor;
     }
@@ -557,5 +603,4 @@ public class FullScreenVideoViewZPI extends LinearLayout implements PresentableV
         long declaredLength = fileDescriptor.getDeclaredLength();
         return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength);
     }
-
 }
