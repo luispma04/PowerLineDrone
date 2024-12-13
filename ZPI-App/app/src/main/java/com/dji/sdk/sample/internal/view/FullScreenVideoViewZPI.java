@@ -3,7 +3,6 @@ package com.dji.sdk.sample.internal.view;
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -25,7 +24,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
@@ -43,15 +41,13 @@ import dji.sdk.products.Aircraft;
 import dji.sdk.sdkmanager.DJISDKManager;
 
 import org.tensorflow.lite.Interpreter;
-import org.tensorflow.lite.TensorFlowLite;
-import org.opencv.core.Mat;
-import org.opencv.core.Size;
-import org.opencv.imgproc.Imgproc;
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
+import org.tensorflow.lite.support.common.FileUtil;
+import org.tensorflow.lite.support.common.ops.CastOp;
+import org.tensorflow.lite.support.common.ops.NormalizeOp;
+import org.tensorflow.lite.support.image.ImageProcessor;
+import org.tensorflow.lite.support.image.TensorImage;
+import org.tensorflow.lite.support.image.ops.ResizeOp;
+import org.tensorflow.lite.support.tensorbuffer.TensorBuffer;
 
 public class FullScreenVideoViewZPI extends LinearLayout implements PresentableView {
 
@@ -85,6 +81,14 @@ public class FullScreenVideoViewZPI extends LinearLayout implements PresentableV
     private Runnable objectDetectionRunnable;
     private Interpreter tfliteInterpreter;
     private ObjectDetectionOverlayView detectionOverlayView;
+    private static final String TAG = "ObjectDetection";
+    private static final float CONFIDENCE_THRESHOLD = 0.3f;
+    // TensorFlow Lite support
+    private TensorImage tensorImage;
+    private ImageProcessor imageProcessor;
+    private TensorBuffer outputBuffer;
+    private int[] inputShape;
+    private int[] outputShape;
 
     public FullScreenVideoViewZPI(Context context) {
         super(context);
@@ -120,18 +124,25 @@ public class FullScreenVideoViewZPI extends LinearLayout implements PresentableV
 
     private void init(Context context) {
         try {
-            // Log the model loading attempt
-            Log.d("ObjectDetection", "Attempting to load TensorFlow Lite model...");
-            tfliteInterpreter = new Interpreter(loadModelFile(context, "best_float32.tflite"));
-            Log.d("ObjectDetection", "TensorFlow Lite model loaded successfully.");
-            // Log model input and output shapes
-            Log.d("ObjectDetection", "Input shape: " + Arrays.toString(tfliteInterpreter.getInputTensor(0).shape()));
-            Log.d("ObjectDetection", "Output shape: " + Arrays.toString(tfliteInterpreter.getOutputTensor(0).shape()));
+            // Load TFLite model
+            Log.d(TAG, "Loading TensorFlow Lite model...");
+            tfliteInterpreter = new Interpreter(FileUtil.loadMappedFile(context, "best_float32.tflite"));
+            inputShape = tfliteInterpreter.getInputTensor(0).shape();
+            outputShape = tfliteInterpreter.getOutputTensor(0).shape();
 
+            tensorImage = new TensorImage(tfliteInterpreter.getInputTensor(0).dataType());
+            outputBuffer = TensorBuffer.createFixedSize(outputShape, tfliteInterpreter.getOutputTensor(0).dataType());
+
+            // preprocessing pipeline
+            imageProcessor = new ImageProcessor.Builder()
+                    .add(new ResizeOp(inputShape[1], inputShape[2], ResizeOp.ResizeMethod.BILINEAR))
+                    .add(new NormalizeOp(0.0f, 255.0f))
+                    .add(new CastOp(tfliteInterpreter.getInputTensor(0).dataType()))
+                    .build();
+
+            Log.d(TAG, "Model loaded successfully.");
         } catch (IOException e) {
-            e.printStackTrace();
-            Log.e("ObjectDetection", "Failed to load TensorFlow Lite model!", e);
-            ToastUtils.setResultToToast("Failed to load TensorFlow Lite model!");
+            Log.e(TAG, "Failed to load TensorFlow Lite model.", e);
         }
 
         LayoutInflater.from(context).inflate(R.layout.view_full_screen_video_zpi, this, true);
@@ -320,15 +331,9 @@ public class FullScreenVideoViewZPI extends LinearLayout implements PresentableV
 
     private void toggleObjectDetection() {
         if (isObjectDetectionEnabled) {
-            Log.d("ObjectDetection", "Stopping object detection...");
             stopObjectDetection();
-            btn_detect.setText("Start Detect");
-            ToastUtils.setResultToToast("Object Detection Stopped");
         } else {
-            Log.d("ObjectDetection", "Starting object detection...");
             startObjectDetection();
-            btn_detect.setText("Stop Detect");
-            ToastUtils.setResultToToast("Object Detection Started");
         }
     }
 
@@ -473,94 +478,72 @@ public class FullScreenVideoViewZPI extends LinearLayout implements PresentableV
     private void startObjectDetection() {
         isObjectDetectionEnabled = true;
         objectDetectionHandler = new Handler();
-        objectDetectionRunnable = new Runnable() {
-            @Override
-            public void run() {
-                if (isObjectDetectionEnabled) {
-                    performObjectDetection();
-                    objectDetectionHandler.postDelayed(this, 200);
-                }
-            }
-        };
-        objectDetectionHandler.post(objectDetectionRunnable);
+        objectDetectionHandler.post(() -> {
+            performObjectDetection();
+            objectDetectionHandler.postDelayed(this::performObjectDetection, 200);
+        });
     }
 
     private void stopObjectDetection() {
         isObjectDetectionEnabled = false;
         if (objectDetectionHandler != null) {
-            objectDetectionHandler.removeCallbacks(objectDetectionRunnable);
+            objectDetectionHandler.removeCallbacksAndMessages(null);
         }
     }
 
     private void performObjectDetection() {
-        Log.d("ObjectDetection", "Starting object detection process...");
-        String tfliteVersion = TensorFlowLite.runtimeVersion();
-        Log.d("TensorFlowLite", "TensorFlow Lite Runtime Version: " + tfliteVersion);
+        Bitmap bitmap = videoFeedView.getBitmap();
+        if (bitmap == null) {
+            Log.w(TAG, "No frame available for processing.");
+            return;
+        }
 
-        if (videoFeedView.getBitmap() != null) {
-            Bitmap frameBitmap = videoFeedView.getBitmap();
+        // Preprocess input
+        tensorImage.load(bitmap);
+        tensorImage = imageProcessor.process(tensorImage);
 
-            Log.d("ObjectDetection", "Frame captured for processing: " +
-                    frameBitmap.getWidth() + "x" + frameBitmap.getHeight());
-
-            try {
-                // Preprocess the frame
-                float[] inputTensor = preprocessFrame(frameBitmap);
-                Log.d("ObjectDetection", "Input tensor prepared. Shape: [1, 640, 640, 3]");
-                Log.d("ObjectDetection", "Input tensor size: " + inputTensor.length);
-                Log.d("ObjectDetection", "First 10 tensor values: " +
-                        inputTensor[0] + ", " + inputTensor[1] + ", " + inputTensor[2] + "...");
-
-                // Initialize output tensor matching the model's output shape
-                float[][][] outputTensor = new float[1][5][8400];
-
-                // Allocate tensors and run inference
-                try {
-                    tfliteInterpreter.allocateTensors(); // Ensure tensors are allocated
-                    Log.d("ObjectDetection", "Tensors allocated successfully.");
-                    tfliteInterpreter.run(inputTensor, outputTensor);
-                    Log.d("ObjectDetection", "Inference completed.");
-                } catch (Exception e) {
-                    Log.e("ObjectDetection", "Error during inference: ", e);
-                    return;
-                }
-
-                // Process the model output
-                processOutput(outputTensor);
-
-            } catch (Exception e) {
-                Log.e("ObjectDetection", "Error during preprocessing or detection: ", e);
-            }
-        } else {
-            Log.w("ObjectDetection", "No frame available for processing.");
+        // Run inference
+        try {
+            tfliteInterpreter.run(tensorImage.getBuffer(), outputBuffer.getBuffer());
+            Log.d(TAG, "Inference completed.");
+            processOutput(outputBuffer.getFloatArray());
+        } catch (Exception e) {
+            Log.e(TAG, "Error during inference.", e);
         }
     }
 
-    private void processOutput(float[][][] outputTensor) {
-        Log.d("ObjectDetection", "Processing output tensor...");
+    private void processOutput(float[] output) {
+        Log.d(TAG, "Processing output...");
+        int overlayWidth = detectionOverlayView.getWidth();
+        int overlayHeight = detectionOverlayView.getHeight();
 
-        // Iterate through detections
-        for (int i = 0; i < outputTensor[0][4].length; i++) {
-            float confidence = outputTensor[0][4][i];
+        for (int i = 0; i < output.length; i += 6) {
+            float confidence = output[i + 4];
+            if (confidence >= CONFIDENCE_THRESHOLD) {
+                float xCenter = output[i];
+                float yCenter = output[i + 1];
+                float width = output[i + 2];
+                float height = output[i + 3];
 
-            if (confidence > 0.2) { // Adjust confidence threshold as needed
-                float xCenter = outputTensor[0][0][i];
-                float yCenter = outputTensor[0][1][i];
-                float width = outputTensor[0][2][i];
-                float height = outputTensor[0][3][i];
+                String label = "Tree";
 
-                Log.d("ObjectDetection", "Detection " + i + ": Confidence=" + confidence);
+                float left = (xCenter - width / 2) * overlayWidth;
+                float top = (yCenter - height / 2) * overlayHeight;
+                float right = (xCenter + width / 2) * overlayWidth;
+                float bottom = (yCenter + height / 2) * overlayHeight;
 
-                // Convert YOLO format (x_center, y_center, width, height) to bounding box
-                float left = xCenter - width / 2;
-                float top = yCenter - height / 2;
-                float right = xCenter + width / 2;
-                float bottom = yCenter + height / 2;
+                left = Math.max(0, Math.min(left, overlayWidth));
+                top = Math.max(0, Math.min(top, overlayHeight));
+                right = Math.max(0, Math.min(right, overlayWidth));
+                bottom = Math.max(0, Math.min(bottom, overlayHeight));
 
-                Log.d("ObjectDetection", "Bounding box - Left: " + left + ", Top: " + top +
-                        ", Right: " + right + ", Bottom: " + bottom);
+                if (left >= right || top >= bottom) {
+                    Log.d(TAG, "Bounding box out of bounds, skipping: [" + left + ", " + top + ", " + right + ", " + bottom + "]");
+                    continue;
+                }
 
-                updateDetectionOverlay(left, top, right, bottom, "Detected Object");
+                Log.d(TAG, "Detected: " + label + " at [" + left + ", " + top + ", " + right + ", " + bottom + "]");
+                updateOverlay(left, top, right, bottom, label);
             }
         }
     }
@@ -579,7 +562,6 @@ public class FullScreenVideoViewZPI extends LinearLayout implements PresentableV
         for (int i = 0; i < pixelValues.length; i++) {
             int pixel = pixelValues[i];
 
-            // Normalize RGB values to [0, 1]
             inputTensor[i * 3] = ((pixel >> 16) & 0xFF) / 255.0f; // Red
             inputTensor[i * 3 + 1] = ((pixel >> 8) & 0xFF) / 255.0f; // Green
             inputTensor[i * 3 + 2] = (pixel & 0xFF) / 255.0f; // Blue
@@ -587,12 +569,34 @@ public class FullScreenVideoViewZPI extends LinearLayout implements PresentableV
         return inputTensor;
     }
 
-    private void updateDetectionOverlay(float left, float top, float right, float bottom, String label) {
-        detectionOverlayView.setBoundingBox(left, top, right, bottom, label);
+    private void updateOverlay(float left, float top, float right, float bottom, String label) {
+        int overlayWidth = detectionOverlayView.getWidth();
+        int overlayHeight = detectionOverlayView.getHeight();
+
+        if (overlayWidth <= 0 || overlayHeight <= 0) {
+            Log.e("Overlay", "Invalid overlay dimensions: " + overlayWidth + "x" + overlayHeight);
+            return;
+        }
+
+        float scaledLeft = left * overlayWidth;
+        float scaledTop = top * overlayHeight;
+        float scaledRight = right * overlayWidth;
+        float scaledBottom = bottom * overlayHeight;
+
+        if (scaledLeft < 0 || scaledTop < 0 || scaledRight > overlayWidth || scaledBottom > overlayHeight) {
+            Log.d("Overlay", "Bounding box out of bounds, skipping: RectF(" + scaledLeft + ", " + scaledTop + ", " + scaledRight + ", " + scaledBottom + ")");
+            return;
+        }
+
+        Log.d("Overlay", "Final bounding box: RectF(" + scaledLeft + ", " + scaledTop + ", " + scaledRight + ", " + scaledBottom + ")");
+
+        // Update the overlay
+        detectionOverlayView.setBoundingBox(scaledLeft, scaledTop, scaledRight, scaledBottom, label);
     }
 
     private void clearDetectionOverlay() {
         detectionOverlayView.clearBoundingBox();
+        detectionOverlayView.invalidate();
     }
 
     private MappedByteBuffer loadModelFile(Context context, String modelPath) throws IOException {

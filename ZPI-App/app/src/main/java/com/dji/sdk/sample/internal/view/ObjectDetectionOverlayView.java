@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 public class ObjectDetectionOverlayView extends View {
@@ -29,11 +30,11 @@ public class ObjectDetectionOverlayView extends View {
         boxPaint = new Paint();
         boxPaint.setColor(getResources().getColor(android.R.color.holo_blue_light));
         boxPaint.setStyle(Paint.Style.STROKE);
-        boxPaint.setStrokeWidth(6);
+        boxPaint.setStrokeWidth(10);
 
         labelPaint = new Paint();
         labelPaint.setColor(getResources().getColor(android.R.color.white));
-        labelPaint.setTextSize(48);
+        labelPaint.setTextSize(60);
         labelPaint.setStyle(Paint.Style.FILL);
     }
 
@@ -48,7 +49,7 @@ public class ObjectDetectionOverlayView extends View {
         this.boundingBox = null;
         this.label = null;
         this.showDetection = false;
-        invalidate(); // Redraw the view
+        invalidate(); // Redraw
     }
 
     @Override
@@ -56,12 +57,14 @@ public class ObjectDetectionOverlayView extends View {
         super.onDraw(canvas);
 
         if (showDetection && boundingBox != null) {
+            Log.d("Overlay", "Drawing bounding box: " + boundingBox.toString());
+
             // Draw bounding box
             canvas.drawRect(boundingBox, boxPaint);
 
-            // Draw label above the bounding box
+            // Draw label
             float labelX = boundingBox.left;
-            float labelY = boundingBox.top - 10; // Slightly above the box
+            float labelY = boundingBox.top - 10;
             canvas.drawText(label, labelX, labelY, labelPaint);
         }
     }
