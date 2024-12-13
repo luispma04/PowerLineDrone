@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.dji.sdk.sample.internal.view.MainContent xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:focusable="true"
+    android:gravity="center"
+    android:clickable="true"
+    android:orientation="vertical"
+    android:layout_margin="5dp"
+    android:fitsSystemWindows="true"
+    tools:context=".internal.controller.MainActivity">
+
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        style="@android:style/Widget.ProgressBar.Horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="5dp"
+        android:max="100"
+        android:progress="0"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/text_connection_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="5dp"
+        android:gravity="center"
+        android:text="Status: No Product Connected"
+        android:textColor="@android:color/black"
+        android:textSize="20dp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/text_product_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/text_connection_status"
+        android:layout_centerHorizontal="true"
+        android:gravity="center"
+        android:text="@string/product_information"
+        android:textColor="@android:color/black"
+        android:textSize="20dp"
+        android:textStyle="bold" />
+
+    <!--Make this default focus so edittext won't be the focus-->
+    <TextView
+        android:id="@+id/text_model_available"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/text_product_info"
+        android:layout_centerHorizontal="true"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:gravity="center"
+        android:text="@string/model_not_available"
+        android:textColor="@color/gray"
+        android:textSize="15dp" />
+    <!-- :nextFocusUp and :nextFocusLeft have been set to the id of this component
+    to prevent the text_model_available from receiving focus again -->
+
+    <Button
+        android:id="@+id/btn_registerApp"
+        android:layout_width="150dp"
+        android:layout_height="55dp"
+        android:layout_below="@+id/text_model_available"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="15dp"
+        android:background="@drawable/round_btn"
+        android:text="Register APP"
+        android:textAllCaps="false"
+        android:textColor="@color/common_text_color"
+        android:textSize="15dp" />
+
+    <Button
+        android:id="@+id/btn_open"
+        android:layout_width="150dp"
+        android:layout_height="55dp"
+        android:layout_below="@+id/btn_registerApp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="15dp"
+        android:background="@drawable/round_btn"
+        android:text="Open"
+        android:textAllCaps="false"
+        android:textColor="@color/common_text_color"
+        android:textSize="15dp" />
+
+    <TextView
+        android:id="@+id/text_version"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/btn_open"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="15dp"
+        android:text="@string/sdk_version"
+        android:textColor="@color/gray"
+        android:textSize="15dp" />
+
+    <ImageView
+        android:id="@+id/openListImageView"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:layout_alignParentEnd="true"
+        android:background="@color/black"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone"
+        app:srcCompat="@drawable/ic_search_white_28dp" />
+
+</com.dji.sdk.sample.internal.view.MainContent>
