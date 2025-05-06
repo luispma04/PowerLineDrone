@@ -364,4 +364,19 @@
 
     <string name="uas_view">UAS</string>
 
+    <string name="app_name">PowerLine Drone</string>
+    <string name="title_activity_connection">ConnectionActivity</string>
+    <string name="title_activity_inspection_mission">InspectionMissionActivity</string>
+
+    <string name="btn_load_inspection_points">Load Inspection Points</string>
+    <string name="btn_load_photo_positions">Load Photo Positions</string>
+    <string name="btn_start_mission">Start Mission</string>
+    <string name="btn_pause_mission">Pause</string>
+    <string name="btn_resume_mission">Resume</string>
+    <string name="btn_stop_mission">Stop</string>
+    <string name="btn_accept_photo">Accept Photo</string>
+    <string name="btn_retake_photo">Retake Photo</string>
+    <string name="tv_status">Status</string>
+    <string name="iv_preview">Photo Preview</string>
+
 </resources>
