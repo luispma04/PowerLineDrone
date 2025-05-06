@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- DJI USB Accessory Filter -->
+    <usb-accessory
+        manufacturer="DJI"
+        model="Android Accessory"
+        version="1.0" />
+</resources>

@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    tools:context=".InspectionMissionActivity">
+
+    <!-- Status TextView -->
+    <TextView
+        android:id="@+id/tv_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:gravity="center"
+        android:text="Not connected"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:padding="8dp" />
+
+    <!-- Load Data buttons -->
+    <LinearLayout
+        android:id="@+id/layout_load_buttons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tv_status"
+        android:orientation="horizontal"
+        android:padding="8dp">
+
+        <Button
+            android:id="@+id/btn_load_inspection_points"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Load Inspection Points"
+            android:enabled="false"
+            android:layout_marginEnd="4dp" />
+
+        <Button
+            android:id="@+id/btn_load_photo_positions"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Load Photo Positions"
+            android:enabled="false"
+            android:layout_marginStart="4dp" />
+    </LinearLayout>
+
+    <!-- Mission Control buttons -->
+    <LinearLayout
+        android:id="@+id/layout_mission_buttons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/layout_load_buttons"
+        android:orientation="horizontal"
+        android:padding="8dp">
+
+        <Button
+            android:id="@+id/btn_start_mission"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Start"
+            android:enabled="false"
+            android:layout_marginEnd="4dp" />
+
+        <Button
+            android:id="@+id/btn_pause_mission"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Pause"
+            android:enabled="false"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp" />
+
+        <Button
+            android:id="@+id/btn_resume_mission"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Resume"
+            android:enabled="false"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp" />
+
+        <Button
+            android:id="@+id/btn_stop_mission"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Stop"
+            android:enabled="false"
+            android:layout_marginStart="4dp" />
+    </LinearLayout>
+
+    <!-- Image Preview -->
+    <ImageView
+        android:id="@+id/iv_preview"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_below="@id/layout_mission_buttons"
+        android:layout_above="@+id/layout_photo_approval_buttons"
+        android:scaleType="fitCenter"
+        android:background="#EEEEEE"
+        android:layout_margin="8dp" />
+
+    <!-- Photo Approval buttons -->
+    <LinearLayout
+        android:id="@+id/layout_photo_approval_buttons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal"
+        android:padding="8dp">
+
+        <Button
+            android:id="@+id/btn_retake_photo"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Retake Photo"
+            android:enabled="false"
+            android:layout_marginEnd="4dp" />
+
+        <Button
+            android:id="@+id/btn_accept_photo"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Accept Photo"
+            android:enabled="false"
+            android:layout_marginStart="4dp" />
+    </LinearLayout>
+
+</RelativeLayout>
